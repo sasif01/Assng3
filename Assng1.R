@@ -8,7 +8,10 @@
 #In light of this uncertainty, this project will take an exploratory approach to investigate the diversity and distribution of tardigrades across different countries from which they’ve been sampled. Given their wide range of distributions, it is hypothesized that sampling efforts across different countries have been extensive for most genera of tardigrade within the Echiniscidae family. As well, diversity of genera sampled should be relatively equal, since nearly all genres of tardigrades are known to be widely distributed. 
 
 #####
-#The required packages were loaded into R. Tideyverse allows for easy data manipulation, exploration and visualization. Vegan is an R package for community ecologists. It contains the most popular methods of multivariate analysis for analyzing communities. The ggplot2 is a data visualization package that allows us to create complex plots. The labdvs package contains useful function that allow ordination and community analyses.
+#The required packages were loaded into R. Tidyverse allows for easy data manipulation, exploration and visualization. Vegan is an R package for community ecologists. It contains the most popular methods of multivariate analysis for analyzing communities. The ggplot2 is a data visualization package that allows us to create complex plots. The labdvs package contains useful function that allow ordination and community analyses.
+
+#* =zuhaa's edits
+#*minor typo edit should be tidyverse instead of tideyverse
 
 # Loading the packages needed for analysis 
 install.packages("tidyverse")
@@ -25,42 +28,95 @@ library(vegan)
 #Using an API call for the Tardigrade dataset. The call has been customized to focus on the family Echiniscidae. 
 
 #Calling the dataset for the tardigrades in the family Echiniscidae.
-Tardigrad <- read_tsv("http://www.boldsystems.org/index.php/API_Public/combined?taxon=Echiniscidae&format=tsv")
+Tardigrade<- read_tsv("http://www.boldsystems.org/index.php/API_Public/combined?taxon=Echiniscidae&format=tsv")
+#*should be called Tardigrade instead of Tradigrad
 
 #To narrow our focus to different genera of Echiniscidae and the countries they’re sampled from, a new data frame is created (grouped_Data). All missing entries from countries and genus are filtered out. 
 #Creates data frame for unique combination of countries and genus along and tallies number of genus from that country. All unknown countries and genus are filtered out. 
-grouped_Data = Tardigrad %>%
-  filter(!is.na(country)) %>%
-  filter(!is.na(genus_name)) %>%
-  group_by(country, genus_name) %>%
-  tally() 
+#grouped_Data = Tardigrade%>%
+  #filter(!is.na(country)) %>%
+  #filter(!is.na(genus_name)) %>%
+  #group_by(country, genus_name) %>%
+  #tally() 
 #####
 #Refraction Curve (Figure 1)
 #To get a sense of sampling completeness of genera sampled refraction curve is created.
 
 #Reorganizing the grouped_Data tidy data into basic dataframe 
-data_frame_grouped = data.frame(country=grouped_Data[,1],
-                                genus = grouped_Data[,2],
-                                obsv = grouped_Data[,3])
+#data_frame_grouped = data.frame(country=grouped_Data[,1],
+                                #genus = grouped_Data[,2],
+                                #obsv = grouped_Data[,3])
+#*data.frame can easily convert tibble to dataframe saving us time instead of  writing the code above
+#data_frame_grouped= data.frame(grouped_Data)
+
+#*make sure to view after data filtration step to ensure it worked like you intended
+#View(data_frame_grouped)
+
+#*ideally we would want the genus name, followed by country, followed by sample size
+#rearranging column names
+#data_frame_grouped <- data_frame_grouped[, c("genus_name","country","n")]
+
+#*we would also want column n to have a proper name so it is easier to identify what the column represents
+#colnames(data_frame_grouped)[colnames(data_frame_grouped)=="n"] <- "sample_size"
+#*view again to ensure the above step worked
+#View(data_frame_grouped)
+
+
+##* Creating function to do all of the above so any data can be subsampled in lesser lines of code and has increased generality and usability 
+
+subset_data <- function (dataset) {
+    
+  x<-data.frame(dataset%>%
+    filter(!is.na(country)) %>%
+    filter(!is.na(genus_name)) %>%
+    group_by(country, genus_name) %>%
+    tally() %>% rename("sample_size"="n"))
+  
+      y <- x[, c("genus_name","country","sample_size")]
+      
+  }
+data_frame_grouped<-subset_data(Tardigrade)
+View(data_frame_grouped)
+
+#* Adding a frequency distribution curve for sample size
+#* This shows that the sample sizes are very unbalanced among genus, where quite a few genus were only sampled once or twice whereas others may have been sampled > than 100 times. It might be better to choose a dataset that is more balanced to determine the diversity aspect of the question
+hist(data_frame_grouped$sample_size,breaks = 40, xlab ="sample size",main = "Genus sample size" )
 
 #matrify requires the labdsv package. The function rearranges the data-frame data_frame_grouped into a numeric matrix.
 comm_mat = matrify(data_frame_grouped)
 
-#Vector of colours to be included in the refraction curve.
-col <- c("black", "darkred", "forestgreen", "orange", "blue", "yellow", "hotpink")
+#col <- c("black", "darkred", "forestgreen", "orange", "blue", "yellow", "hotpink")
 
 #Creating a refraction curve using the transpose of the community matrix, so genera would be depicted as a function of countries. 
-refrac_curve = rarecurve(t(comm_mat), col=col, label=T, ylab="Genera", main ="Refranction curve of Genera across Countries")
+refrac_curve = rarecurve((comm_mat), col=col, label=F, ylab="Genera", main ="Refraction curve of Genera across Countries", tidy=TRUE)
 
-#Figure 1 depicts the refraction curve of sampled genera across countries. The slop of the curves are indicators of sampling completeness per genera across all countries they’ve been sampled from. 
+#*should say refraction rather than refranction curve
+
+#*#*Matrify takes 3 columns in a dataframe  in the form of sample id, taxon and abundance and converts to full matrix form. Rearranging column names to an ideal arrangement no longer produces the same output for refraction curve so we need to switch the rows and columns and so we must remove t/transpose in our rarecurve code.
+
+#*The labels are overlapping the axes and other genus. It would be better to have the genus names as a legend on the side and wider lines so they are visible, this is not possible with rarecurve() however, rarecurve can return a tidy dataframe (tidy=TRUE) that can be used with ggplot to get better graphics
+#*To make the colors accessible to everyone a colorblind friendly palette found from http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/ was used
+#*col=col can be taken out from the above code 
+
+##*improved rarefraction curve
+
+ggplot(refrac_curve, aes(x = Sample, y = Species, color = Site))+ ylab("Genera") + xlab("Sample Size") + theme_bw() +geom_line(size=1.2) + labs(title = "Tarigrade Genus Distribution across Countries")+ theme(plot.title = element_text(hjust = 0.5), legend.title=element_blank()) +  scale_color_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00"))
+
+#Figure 1 depicts the refraction curve of sampled genera across countries. The slope of the curves are indicators of sampling completeness per genera across all countries they’ve been sampled from. 
 
 #####
 #Stacked Bar-chart (Figure 2)
 
 #Creating a stacked bar chart for each country and the number of specimen per genus sampled from said country.
 
-#Creating stack bar-plot of of genera per country. The theme() function flips the x-axis labels to a vertical position.  
-ggplot(grouped_Data, aes(x =country, y= n, fill= genus_name)) + geom_col() + labs(title = "Stacked Barchart of Tarigrad Genus Distribution", x = "Countries", y = "Count")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+#*Creating stack bar-plot of of genera per country. The theme() function flips the x-axis labels to a vertical position.  
+ggplot(grouped_Data, aes(x =country, y= n, fill= genus_name)) + geom_col() + scale_fill_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00")) + labs(title = "Tarigrade Genus Distribution", x = "Countries", y = "Count")+ theme(plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+##*improving figure 2
+#*Title only needs to depict what is happening in the graph rather than defining the type of graph it is so having Tardigrade Genus Distribution is probably a better fitted title than Stacked Barchart of Tarigrade Genus Distribution.Ideally you would want the title to be centered rather than left justified. You can do this by using plot.title = element_text(hjust = 0.5) within theme of ggplot.
+
+#*Shades of green, blue and turquoise may seem similar to people who are colorblind, using color palettes that are easily distinguishable and clear are important to use so you figures are accessible to all. Colors can be assigned using scale_fill_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00")). Here I used a colorblind friendly palette found from http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/ 
+
 
 #Figure 2 depicts frequency of genera from the family Echiniscidae sampled per country. This allows for easy visualization of sampled genera diversity across countries.
 
@@ -81,7 +137,7 @@ diversity(comm_mat)
 
 #Finds species accumulation curves or the number of species for a certain number of sampled sites or individuals.
 AccumCurve <- specaccum(comm_mat)
-#Creating new data.fram using the reuslts from the accumulation curve (AccumCurve),
+#Creating new data.frame using the results from the accumulation curve (AccumCurve),
 accum_frame <- data.frame(Sites=AccumCurve$sites, Richness=AccumCurve$richness, SD=AccumCurve$sd)
 
 #Plotting the accumulation curve for genera across countries.
