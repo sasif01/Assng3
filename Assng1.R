@@ -100,7 +100,7 @@ refrac_curve = rarecurve((comm_mat), col=col, label=F, ylab="Genera", main ="Ref
 
 ##*improved rarefraction curve
 
-ggplot(refrac_curve, aes(x = Sample, y = Species, color = Site))+ ylab("Genera") + theme_bw() +geom_line(size=1.2) + labs(title = "Tarigrade Genus Distribution across Countries")+ theme(plot.title = element_text(hjust = 0.5), legend.title=element_blank()) +  scale_color_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00"))
+ggplot(refrac_curve, aes(x = Sample, y = Species, color = Site))+ ylab("Genera") + xlab("Sample_size") + theme_bw() +geom_line(size=1.2) + labs(title = "Tarigrade Genus Distribution across Countries")+ theme(plot.title = element_text(hjust = 0.5), legend.title=element_blank()) +  scale_color_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00"))
 
 #Figure 1 depicts the refraction curve of sampled genera across countries. The slope of the curves are indicators of sampling completeness per genera across all countries they’ve been sampled from. 
 
