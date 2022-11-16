@@ -62,6 +62,19 @@ colnames(data_frame_grouped)[colnames(data_frame_grouped)=="n"] <- "sample_size"
 View(data_frame_grouped)
 
 
+#* Creating function to do all of the above so and data can be subsampled in lesser lines of code and can be applied to any dataset
+
+subset_data <- function (dataset) {
+    
+y<-data.frame(dataset%>%
+filter(!is.na(country)) %>%
+filter(!is.na(genus_name)) %>%
+group_by(country, genus_name) %>%
+tally())
+
+colnames(y)[colnames(y)=="n"] <-"sample_size"
+    }
+test<-subset_data(Tardigrade)
 #matrify requires the labdsv package. The function rearranges the data-frame data_frame_grouped into a numeric matrix.
 comm_mat = matrify(data_frame_grouped)
 
@@ -86,7 +99,7 @@ ggplot(refrac_curve, aes(x = Sample, y = Species, color = Site))+ ylab("Genera")
 #Creating a stacked bar chart for each country and the number of specimen per genus sampled from said country.
 
 #Creating stack bar-plot of of genera per country. The theme() function flips the x-axis labels to a vertical position.  
-ggplot(grouped_Data, aes(x =country, y= n, fill= genus_name)) + geom_col() + labs(title = "Stacked Barchart of Tarigrad Genus Distribution", x = "Countries", y = "Count")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(grouped_Data, aes(x =country, y= n, fill= genus_name)) + geom_col() + labs(title = "Tarigrad Genus Distribution", x = "Countries", y = "Count")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 #Figure 2 depicts frequency of genera from the family Echiniscidae sampled per country. This allows for easy visualization of sampled genera diversity across countries.
 
