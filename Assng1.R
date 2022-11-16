@@ -43,9 +43,9 @@ Tardigrade<- read_tsv("http://www.boldsystems.org/index.php/API_Public/combined?
 #To get a sense of sampling completeness of genera sampled refraction curve is created.
 
 #Reorganizing the grouped_Data tidy data into basic dataframe 
-data_frame_grouped = data.frame(country=grouped_Data[,1],
-                                genus = grouped_Data[,2],
-                                obsv = grouped_Data[,3])
+#data_frame_grouped = data.frame(country=grouped_Data[,1],
+                                #genus = grouped_Data[,2],
+                                #obsv = grouped_Data[,3])
 #*data.frame can easily convert tibble to dataframe saving us time instead of  writing the code above
 #data_frame_grouped= data.frame(grouped_Data)
 
@@ -80,7 +80,7 @@ View(data_frame_grouped)
 
 #* Adding a frequency distribution curve for sample size
 #* This shows that the sample sizes are very unbalanced among genus, where quite a few genus were only sampled once or twice whereas others may have been sampled > than 100 times. It might be better to choose a dataset that is more balanced to determine the diversity aspect of the question
-hist(data_frame_grouped$sample_size,breaks = 40, xlab ="sample size",main = "Histogram of sample size" )
+hist(data_frame_grouped$sample_size,breaks = 40, xlab ="sample size",main = "Genus sample size" )
 
 #matrify requires the labdsv package. The function rearranges the data-frame data_frame_grouped into a numeric matrix.
 comm_mat = matrify(data_frame_grouped)
@@ -100,7 +100,7 @@ refrac_curve = rarecurve((comm_mat), col=col, label=F, ylab="Genera", main ="Ref
 
 ##*improved rarefraction curve
 
-ggplot(refrac_curve, aes(x = Sample, y = Species, color = Site))+ ylab("Genera") + theme_bw() +geom_line(size=1.2) + labs(title = "Tarigrade Genus Distribution")+ theme(plot.title = element_text(hjust = 0.5), legend.title=element_blank()) +  scale_color_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00"))
+ggplot(refrac_curve, aes(x = Sample, y = Species, color = Site))+ ylab("Genera") + theme_bw() +geom_line(size=1.2) + labs(title = "Tarigrade Genus Distribution across Countries")+ theme(plot.title = element_text(hjust = 0.5), legend.title=element_blank()) +  scale_color_manual(values=c("#999999", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#D55E00"))
 
 #Figure 1 depicts the refraction curve of sampled genera across countries. The slope of the curves are indicators of sampling completeness per genera across all countries they’ve been sampled from. 
 
