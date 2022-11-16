@@ -43,9 +43,9 @@ Tardigrade<- read_tsv("http://www.boldsystems.org/index.php/API_Public/combined?
 #To get a sense of sampling completeness of genera sampled refraction curve is created.
 
 #Reorganizing the grouped_Data tidy data into basic dataframe 
-#data_frame_grouped = data.frame(country=grouped_Data[,1],
-                                #genus = grouped_Data[,2],
-                                #obsv = grouped_Data[,3])
+data_frame_grouped = data.frame(country=grouped_Data[,1],
+                                genus = grouped_Data[,2],
+                                obsv = grouped_Data[,3])
 #*data.frame can easily convert tibble to dataframe saving us time instead of  writing the code above
 #data_frame_grouped= data.frame(grouped_Data)
 
